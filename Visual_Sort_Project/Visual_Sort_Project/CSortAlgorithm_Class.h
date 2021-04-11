@@ -11,7 +11,7 @@ class CSortAlgorithm_Class
 {
 	friend class CMainProg;
 public:
-	explicit CSortAlgorithm_Class(int num);
+	explicit CSortAlgorithm_Class(int num, int* ptr);
 	~CSortAlgorithm_Class();
 
 
@@ -35,13 +35,19 @@ private:
 	/* 정렬 조건에 따라 Swap */
 	void Swap(int i, int j);
 	void RandomSwap_Array();
+	void Recent(int maxCount, int i);
+
+public:
+	void Recent_Clear();
 
 private:
-	std::vector<int>* vec;
+	std::vector<int> vec;
 	std::queue<int> m_Qrecent;
 	bool*			m_iRecent;
+	int				m_iSize;
 	int				m_iSelect = INT_MAX;
 	int				m_MaxLength = 0;
+	int*			m_pDelay;
 };
 
 #endif // !__SORTALGORITHM_H__

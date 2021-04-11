@@ -21,6 +21,7 @@ private:
 
 private:
 	int	m_iSize;
+	int m_iDelay;
 	CSortAlgorithm_Class SortClass;
 };
 

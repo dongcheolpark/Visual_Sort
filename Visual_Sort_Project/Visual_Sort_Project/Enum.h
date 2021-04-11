@@ -22,4 +22,11 @@ enum class eSorts
 	End
 };
 
+enum class eColor
+{
+	White,
+	Green,
+	Red
+};
+
 #endif // !__ENUM_H__

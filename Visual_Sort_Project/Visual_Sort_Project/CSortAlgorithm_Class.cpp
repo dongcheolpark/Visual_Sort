@@ -4,7 +4,8 @@
 #include "Buffer.h"
 #include "Enum.h"
 
-CSortAlgorithm_Class::CSortAlgorithm_Class(int num)
+CSortAlgorithm_Class::CSortAlgorithm_Class(int num, int* ptr)
+	: m_pDelay(ptr)
 {
 	Initialize(num);
 }
@@ -17,12 +18,13 @@ CSortAlgorithm_Class::~CSortAlgorithm_Class()
 void CSortAlgorithm_Class::Initialize(int num)
 {
 	Release();
+	vec.clear();
 	int max = 0;
-	vec = new std::vector<int>;
+	m_iSize = num;
 	m_iRecent = new bool[num];
 	for (int i = 0; i < num; i++)
 	{
-		vec->push_back(i + 1);
+		vec.push_back(i + 1);
 		m_iRecent[i] = false;
 
 		if (max < i + 1)
@@ -40,7 +42,6 @@ void CSortAlgorithm_Class::Initialize(int num)
 void CSortAlgorithm_Class::Release()
 {
 	delete[] m_iRecent;
-	delete vec;
 }
 
 
@@ -50,36 +51,28 @@ void CSortAlgorithm_Class::Show_Array()
 	/* 흰색   SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 1);  */ 
 	/* 초록색 SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 2);  */ 
 	/* 빨간색 SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 4);  */ 
-	for (int i = 0; i < (vec->size()); i++)
+	for (int i = 0; i < (int)(vec.size()); i++)
 	{
-		for (int g = 0; g < (*vec)[i]; g++)
+		for (int g = 0; g < vec[i]; g++)
 		{
 			drawToBackBuffer(g, i);
 		}
 	}
-	render();
-	Sleep(10);
+	render(m_iRecent, m_iSelect, m_iSize);
+	Sleep(*m_pDelay);
 }
 
 void CSortAlgorithm_Class::Sort_Bubble()
 {
 	Clearbuff();
-	for (int i = (vec->size()) - 1; i >= 0; --i)
+	for (int i = (int)(vec.size()) - 1; i >= 0; --i)
 	{
+		m_iSelect = i + 1;
 		for (int g = 0; g < i; ++g)
 		{
 			Swap(g, g + 1);
-			if (!m_Qrecent.empty())
-			{
-				m_iRecent[m_Qrecent.front()] = false;
-				m_Qrecent.pop();
-				m_iRecent[m_Qrecent.front()] = false;
-				m_Qrecent.pop();
-			}
-			m_iRecent[g] = true;
-			m_iRecent[g + 1] = true;
-			m_Qrecent.push(g);
-			m_Qrecent.push(g + 1);
+			Recent(2, g);
+			Recent(2, g + 1);
 
 			Show_Array();
 		}
@@ -90,31 +83,25 @@ void CSortAlgorithm_Class::Sort_Bubble()
 void CSortAlgorithm_Class::Sort_Selection()
 {
 	Clearbuff();
-	for (int i = 0; i < (vec->size()) - 1; i++)
+	for (int i = 0; i < (int)(vec.size()) - 1; i++)
 	{
 		int Min = INT_MAX;
 		int MinA = 0;
 		int Max = INT_MIN;
 		int MaxA = 0;
 		m_iSelect = i - 1;
-		for (int g = i + 1; g < (vec->size()); g++)
+		for (int g = i + 1; g < (int)(vec.size()); g++)
 		{
-			if (!m_Qrecent.empty())
-			{
-				m_iRecent[m_Qrecent.front()] = false;
-				m_Qrecent.pop();
-			}
-			m_iRecent[g] = true;
-			m_Qrecent.push(g);
-			if (Min > (*vec)[g])
+			Recent(2, g);
+			if (Min > vec[g])
 			{
 				MinA = g;
-				Min = (*vec)[g];
+				Min = vec[g];
 			}
-			else if (Max < (*vec)[g])
+			else if (Max < vec[g])
 			{
 				MaxA = g;
-				Max = (*vec)[g];
+				Max = vec[g];
 			}
 			Show_Array();
 		}
@@ -134,7 +121,7 @@ void CSortAlgorithm_Class::Sort_Selection()
 void CSortAlgorithm_Class::Sort_Quick()
 {
 	Clearbuff();
-	Sort_Quick(*vec, 0, (vec->size() - 1));
+	Sort_Quick(vec, 0, ((int)vec.size() - 1));
 	Show_Array();
 }
 
@@ -155,6 +142,8 @@ void CSortAlgorithm_Class::Sort_Quick(std::vector<int>& arr, int start, int end)
 
 		if (l <= r)
 		{
+			Recent(10,l);
+			Recent(10,r);
 			int temp = arr[l];
 			arr[l] = arr[r];
 			arr[r] = temp;
@@ -170,7 +159,7 @@ void CSortAlgorithm_Class::Sort_Quick(std::vector<int>& arr, int start, int end)
 void CSortAlgorithm_Class::Sort_Merge()
 {
 	Clearbuff();
-	Sort_Merge(*vec, 0, (vec->size() - 1));
+	Sort_Merge(vec, 0, ((int)vec.size() - 1));
 }
 
 void CSortAlgorithm_Class::Sort_Merge(std::vector<int>& arr, int left, int right)
@@ -219,6 +208,7 @@ void CSortAlgorithm_Class::Sort_Merge(std::vector<int>& arr, int left, int mid, 
 			sortArr[sIdx] = arr[i];
 		}
 	}
+	Recent(right - left + 1, mid);
 
 	for (int i = left; i <= right; i++)
 	{
@@ -232,20 +222,20 @@ void CSortAlgorithm_Class::Sort_Radix_LSD()
 {
 	Clearbuff();
 	std::queue<int> buckets[10]; // 십진수 정렬
-	int bi;
-	int di;
-	int pos;
+	int bi = 0;
+	int di = 0;
+	int pos = 0;
 	int divfac = 1;
 	int radix;
 
 
 	for (int i = 0; i < m_MaxLength; i++)
 	{
-		for (int j = 0; j < vec->size(); j++)
+		for (int j = 0; j < (int)vec.size(); j++)
 		{
-			radix = ((*vec)[j] / divfac) % 10;
+			radix = (vec[j] / divfac) % 10;
 
-			buckets[radix].push((*vec)[j]);
+			buckets[radix].push(vec[j]);
 		}
 
 		for (int k = 0, di = 0; k < 10; k++)
@@ -253,7 +243,8 @@ void CSortAlgorithm_Class::Sort_Radix_LSD()
 			Show_Array();
 			while (!buckets[k].empty())
 			{
-				(*vec)[di++] = buckets[k].front();
+				vec[di++] = buckets[k].front();
+				Recent(10, buckets[k].front());
 				buckets[k].pop();
 			}
 		}
@@ -264,27 +255,60 @@ void CSortAlgorithm_Class::Sort_Radix_LSD()
 
 void CSortAlgorithm_Class::Swap( int i, int j)
 {
-	if ((*vec)[i] > (*vec)[j])
+	if (vec[i] > vec[j])
 	{
-		int temp = (*vec)[i];
-		(*vec)[i] = (*vec)[j];
-		(*vec)[j] = temp;
+		int temp = vec[i];
+		vec[i] = vec[j];
+		vec[j] = temp;
 	}
 }
 
 void CSortAlgorithm_Class::RandomSwap_Array()
 {
-	int a;
-	int b;
-	int temp;
-	for (int i = 0; i < (vec->size()) * 100; i++)
+	int dd = 0;
+	int ee = 0;
+	int temp = 0;
+	for (int i = 0; i < ((int)(vec.size()) * 100); i++)
 	{
-		a = rand() % (vec->size());
-		b = rand() % (vec->size());
-		if (a == b)
+		dd = rand() % (int)(vec.size());
+		ee = rand() % (int)(vec.size());
+		if (dd == ee)
 			continue;
-		temp = (*vec)[a];
-		(*vec)[a] = (*vec)[b];
-		(*vec)[b] = temp;
+		temp = vec[dd];
+		dd;
+		ee;
+		vec[dd] = vec[ee];
+		vec[ee] = temp;
+	}
+}
+
+void CSortAlgorithm_Class::Recent(int maxCount, int i)
+{
+	if (maxCount > 4)
+	{
+		if(m_Qrecent.size() >= maxCount)
+		{
+			m_iRecent[m_Qrecent.front()] = false;
+			m_Qrecent.pop();
+		}
+	}
+	else
+	{
+		while (m_Qrecent.size() >= maxCount)
+		{
+			m_iRecent[m_Qrecent.front()] = false;
+			m_Qrecent.pop();
+		}
+	}
+	
+	m_iRecent[i] = true;
+	m_Qrecent.push(i);
+}
+
+void CSortAlgorithm_Class::Recent_Clear()
+{
+	for (int i = 0; i < m_iSize; i++)
+	{
+		m_iRecent[i] = false;
 	}
 }
