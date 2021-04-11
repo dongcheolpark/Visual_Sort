@@ -19,8 +19,8 @@
     <Filter Include="소스 파일\01.Sort">
       <UniqueIdentifier>{624333fb-7eee-4a28-a04c-dff345ce7214}</UniqueIdentifier>
     </Filter>
-    <Filter Include="소스 파일\02.Visual">
-      <UniqueIdentifier>{fb119e56-582c-4b84-a394-3a249231840a}</UniqueIdentifier>
+    <Filter Include="소스 파일\02.MainProg">
+      <UniqueIdentifier>{f339f46a-9f41-4c9c-8ef1-ba0876e64c9d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -30,6 +30,15 @@
     <ClInclude Include="CSortAlgorithm_Class.h">
       <Filter>소스 파일\01.Sort</Filter>
     </ClInclude>
+    <ClInclude Include="CMainProg.h">
+      <Filter>소스 파일\02.MainProg</Filter>
+    </ClInclude>
+    <ClInclude Include="Enum.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Buffer.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -37,6 +46,9 @@
     </ClCompile>
     <ClCompile Include="CSortAlgorithm_Class.cpp">
       <Filter>소스 파일\01.Sort</Filter>
+    </ClCompile>
+    <ClCompile Include="CMainProg.cpp">
+      <Filter>소스 파일\02.MainProg</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

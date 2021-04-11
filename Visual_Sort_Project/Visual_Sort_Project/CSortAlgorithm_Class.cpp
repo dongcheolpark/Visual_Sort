@@ -1,6 +1,8 @@
 #include "CSortAlgorithm_Class.h"
 #include <iostream>
 #include <Windows.h>
+#include "Buffer.h"
+#include "Enum.h"
 
 CSortAlgorithm_Class::CSortAlgorithm_Class(int num)
 {
@@ -14,12 +16,23 @@ CSortAlgorithm_Class::~CSortAlgorithm_Class()
 
 void CSortAlgorithm_Class::Initialize(int num)
 {
+	Release();
+	int max = 0;
 	vec = new std::vector<int>;
 	m_iRecent = new bool[num];
 	for (int i = 0; i < num; i++)
 	{
 		vec->push_back(i + 1);
 		m_iRecent[i] = false;
+
+		if (max < i + 1)
+			max = i + 1;
+	}
+
+	while (max > 0)
+	{
+		max = max / 10;
+		m_MaxLength += 1;
 	}
 	RandomSwap_Array();
 }
@@ -30,89 +43,27 @@ void CSortAlgorithm_Class::Release()
 	delete vec;
 }
 
-void CSortAlgorithm_Class::Menu()
-{
-	while (true)
-	{
-		MenuText();
-		switch (SelectNumber())
-		{
-		case 1:
-			Sort_Bubble();
-			system("pause");
-			break;
-		case 2:
-			Sort_Selection();
-			system("pause");
-		case 5:
-			enum_SortType = enum_SortType == eSortType::Ascending ? eSortType::Descending : eSortType::Ascending;
-			break;
-		case 6:
-			return;
-		default:
-			std::cin.clear();
-			continue;
-		}
-	}
-	
-}
-
-void CSortAlgorithm_Class::MenuText()
-{
-	system("cls");
-	std::cout << "        ※ 정렬 프로그램 ※" << std::endl;
-	std::cout << "1. Bubble Sort " << std::endl;
-
-	std::cout << "2. Selection Sort " << std::endl;
-
-	std::cout << "3. 없어 Sort " << std::endl;
-
-	std::cout << "4. 없어 Sort " << std::endl;
-
-	std::cout << "4. 없어 Sort " << std::endl;
-
-	std::cout << "5. 정렬 방식 변경 [현재 : ";
-	if (enum_SortType == eSortType::Ascending)
-		std::cout << "오름차순 ]" << std::endl;
-	else
-		std::cout << "내림차순 ]" << std::endl;
-
-	std::cout << "6. 프로그램 종료 " << std::endl;
-}
 
 
 void CSortAlgorithm_Class::Show_Array()
 {
-	system("cls");
 	/* 흰색   SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 1);  */ 
 	/* 초록색 SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 2);  */ 
 	/* 빨간색 SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 4);  */ 
 	for (int i = 0; i < (vec->size()); i++)
 	{
-		if (i == m_iSelect)
-		{
-			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 2);
-		}
-		else if (m_iRecent[i])
-		{
-			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 4);
-		}
-		else
-		{
-			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 7);
-		}
 		for (int g = 0; g < (*vec)[i]; g++)
 		{
-			std::cout << "■";
+			drawToBackBuffer(g, i);
 		}
-		std::cout << std::endl;
 	}
-	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 7);
+	render();
 	Sleep(10);
 }
 
 void CSortAlgorithm_Class::Sort_Bubble()
 {
+	Clearbuff();
 	for (int i = (vec->size()) - 1; i >= 0; --i)
 	{
 		for (int g = 0; g < i; ++g)
@@ -133,10 +84,12 @@ void CSortAlgorithm_Class::Sort_Bubble()
 			Show_Array();
 		}
 	}
+	Show_Array();
 }
 
 void CSortAlgorithm_Class::Sort_Selection()
 {
+	Clearbuff();
 	for (int i = 0; i < (vec->size()) - 1; i++)
 	{
 		int Min = INT_MAX;
@@ -153,68 +106,170 @@ void CSortAlgorithm_Class::Sort_Selection()
 			}
 			m_iRecent[g] = true;
 			m_Qrecent.push(g);
-			if (enum_SortType == eSortType::Ascending && Min > (*vec)[g])
+			if (Min > (*vec)[g])
 			{
 				MinA = g;
 				Min = (*vec)[g];
 			}
-			else if (enum_SortType == eSortType::Descending && Max < (*vec)[g])
+			else if (Max < (*vec)[g])
 			{
 				MaxA = g;
 				Max = (*vec)[g];
 			}
 			Show_Array();
 		}
-		if(enum_SortType == eSortType::Ascending)
+		Swap(i, MinA);
+		/*if(enum_SortingType == eSortType::Ascending)
 		{
 			Swap(i, MinA);
-		}
-		else
+		}*/
+		/*else
 		{
 			Swap(i, MaxA);
-		}
+		}*/
 	}
+	Show_Array();
 }
 
 void CSortAlgorithm_Class::Sort_Quick()
 {
+	Clearbuff();
+	Sort_Quick(*vec, 0, (vec->size() - 1));
+	Show_Array();
+}
+
+void CSortAlgorithm_Class::Sort_Quick(std::vector<int>& arr, int start, int end)
+{
+	if (start >= end)
+		return;
+
+	int pivot = arr[(start + end) / 2];
+	int l = start;
+	int r = end;
+
+	while (l <= r)
+	{
+		Show_Array();
+		while (arr[l] < pivot) ++l;
+		while (arr[r] > pivot) --r;
+
+		if (l <= r)
+		{
+			int temp = arr[l];
+			arr[l] = arr[r];
+			arr[r] = temp;
+			l++;
+			r--;
+		}
+	}
+
+	Sort_Quick(arr, start, r);
+	Sort_Quick(arr, l, end);
 }
 
 void CSortAlgorithm_Class::Sort_Merge()
 {
+	Clearbuff();
+	Sort_Merge(*vec, 0, (vec->size() - 1));
+}
+
+void CSortAlgorithm_Class::Sort_Merge(std::vector<int>& arr, int left, int right)
+{
+	int mid;
+	if (left < right)
+	{
+		mid = (left + right) / 2;
+
+		Sort_Merge(arr, left, mid);
+		Sort_Merge(arr, mid + 1, right);
+
+		Sort_Merge(arr, left, mid, right);
+	}
+	Show_Array();
+}
+
+void CSortAlgorithm_Class::Sort_Merge(std::vector<int>& arr, int left, int mid, int right)
+{
+	int fIdx = left;
+	int rIdx = mid + 1;
+
+	int* sortArr = new int[right + 1];
+	int sIdx = left;
+
+	while (fIdx <= mid && rIdx <= right)
+	{
+		if (arr[fIdx] <= arr[rIdx])
+			sortArr[sIdx] = arr[fIdx++];
+		else
+			sortArr[sIdx] = arr[rIdx++];
+		++sIdx;
+	}
+
+	if (fIdx > mid)
+	{
+		for (int i = rIdx; i <= right; ++i, ++sIdx)
+		{
+			sortArr[sIdx] = arr[i];
+		}
+	}
+	else
+	{
+		for (int i = fIdx; i <= mid; i++, ++sIdx)
+		{
+			sortArr[sIdx] = arr[i];
+		}
+	}
+
+	for (int i = left; i <= right; i++)
+	{
+		arr[i] = sortArr[i];
+	}
+	Show_Array();
+	delete[] sortArr;
 }
 
 void CSortAlgorithm_Class::Sort_Radix_LSD()
 {
+	Clearbuff();
+	std::queue<int> buckets[10]; // 십진수 정렬
+	int bi;
+	int di;
+	int pos;
+	int divfac = 1;
+	int radix;
+
+
+	for (int i = 0; i < m_MaxLength; i++)
+	{
+		for (int j = 0; j < vec->size(); j++)
+		{
+			radix = ((*vec)[j] / divfac) % 10;
+
+			buckets[radix].push((*vec)[j]);
+		}
+
+		for (int k = 0, di = 0; k < 10; k++)
+		{
+			Show_Array();
+			while (!buckets[k].empty())
+			{
+				(*vec)[di++] = buckets[k].front();
+				buckets[k].pop();
+			}
+		}
+		divfac *= 10;
+	}
+	Show_Array();
 }
 
 void CSortAlgorithm_Class::Swap( int i, int j)
 {
-	if (enum_SortType == eSortType::Ascending)
+	if ((*vec)[i] > (*vec)[j])
 	{
-		if ((*vec)[i] > (*vec)[j])
-		{
-			int temp = (*vec)[i];
-			(*vec)[i] = (*vec)[j];
-			(*vec)[j] = temp;
-		}
+		int temp = (*vec)[i];
+		(*vec)[i] = (*vec)[j];
+		(*vec)[j] = temp;
 	}
-	else if(enum_SortType == eSortType::Descending)
-	{
-		if ((*vec)[i] < (*vec)[j])
-		{
-			int temp = (*vec)[i];
-			(*vec)[i] = (*vec)[j];
-			(*vec)[j] = temp;
-		}
-	}
-}
-
-int CSortAlgorithm_Class::SelectNumber()
-{
-	int iSelect = 0;
-	std::cin >> iSelect;
-	return iSelect;
 }
 
 void CSortAlgorithm_Class::RandomSwap_Array()
@@ -228,7 +283,6 @@ void CSortAlgorithm_Class::RandomSwap_Array()
 		b = rand() % (vec->size());
 		if (a == b)
 			continue;
-		std::cout << "a : " << a << ", b : " << b << std::endl;
 		temp = (*vec)[a];
 		(*vec)[a] = (*vec)[b];
 		(*vec)[b] = temp;

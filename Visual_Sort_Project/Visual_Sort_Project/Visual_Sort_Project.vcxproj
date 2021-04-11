@@ -123,10 +123,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Buffer.h" />
+    <ClInclude Include="CMainProg.h" />
     <ClInclude Include="CSortAlgorithm_Class.h" />
+    <ClInclude Include="Enum.h" />
     <ClInclude Include="Headers.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CMainProg.cpp" />
     <ClCompile Include="CSortAlgorithm_Class.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>

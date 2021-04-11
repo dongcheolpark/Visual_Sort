@@ -1,10 +1,11 @@
 #include "Headers.h"
+#include "Buffer.h"
 
 int main()
 {
 	srand(unsigned(time(NULL)));
+	CMainProg Main(64);
 
-	CSortAlgorithm_Class Sort(30);
-	Sort.Menu();
+	Main.MainMenu();
 	return 0;
 }
